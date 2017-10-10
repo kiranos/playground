@@ -1,0 +1,112 @@
+version: "3"
+services:
+  postgres:
+    image: postgres:9.6
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1G
+      restart_policy:
+        condition: on-failure
+    environment:
+      SECRET_KEY: "awxsecret"
+      POSTGRES_DB: "awx"
+      POSTGRES_USER: "awx"
+      POSTGRES_PASSWORD: "awxpass"
+    networks:
+      - webnet
+
+  rabbitmq:
+    image: rabbitmq:3
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1G
+      restart_policy:
+        condition: on-failure
+    environment:
+      RABBITMQ_DEFAULT_VHOST: "awx"
+    networks:
+      - webnet
+
+  memcached:
+    image: memcached:alpine
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "0.1"
+          memory: 1G
+      restart_policy:
+        condition: on-failure
+    networks:
+      - webnet
+
+  awx_task:
+    image: ansible/awx_task:1.0.1
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "1"
+          memory: 2G
+      restart_policy:
+        condition: on-failure
+    environment:
+      SECRET_KEY: "awxsecret"
+      DATABASE_NAME: "awx"
+      DATABASE_USER: "awx"
+      DATABASE_PASSWORD: "awxpass"
+      DATABASE_PORT: "5432"
+      DATABASE_HOST: "postgres"
+      RABBITMQ_USER: "guest"
+      RABBITMQ_PASSWORD: "guest"
+      RABBITMQ_HOST: "rabbitmq"
+      RABBITMQ_PORT: "5432"
+      RABBITMQ_VHOST: "awx"
+      MEMCACHED_HOST: "memcached"
+      MEMCACHED_PORT: "11211"
+    depends_on:
+      - postgres
+      - rabbitmq
+    networks:
+      - webnet
+
+  awx_web:
+    image: ansible/awx_web:1.0.1
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "1"
+          memory: 2G
+      restart_policy:
+        condition: on-failure
+    ports:
+      - "80:8052"
+    environment:
+      SECRET_KEY: "awxsecret"
+      DATABASE_NAME: "awx"
+      DATABASE_USER: "awx"
+      DATABASE_PASSWORD: "awxpass"
+      DATABASE_PORT: "5432"
+      DATABASE_HOST: "postgres"
+      RABBITMQ_USER: "guest"
+      RABBITMQ_PASSWORD: "guest"
+      RABBITMQ_HOST: "rabbitmq"
+      RABBITMQ_PORT: "5432"
+      RABBITMQ_VHOST: "awx"
+      MEMCACHED_HOST: "memcached"
+      MEMCACHED_PORT: "11211"
+    depends_on:
+      - postgres
+      - rabbitmq
+    networks:
+      - webnet
+
+networks:
+  webnet:
