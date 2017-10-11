@@ -70,9 +70,6 @@ services:
       RABBITMQ_VHOST: "awx"
       MEMCACHED_HOST: "memcached"
       MEMCACHED_PORT: "11211"
-    depends_on:
-      - postgres
-      - rabbitmq
     networks:
       - webnet
 
@@ -102,9 +99,6 @@ services:
       RABBITMQ_VHOST: "awx"
       MEMCACHED_HOST: "memcached"
       MEMCACHED_PORT: "11211"
-    depends_on:
-      - postgres
-      - rabbitmq
     networks:
       - webnet
 
